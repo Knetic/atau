@@ -9,12 +9,16 @@ func GenerateGo(api *API, module string)(string, error) {
 	var buffer *presilo.BufferedFormatString
 
 	buffer = presilo.NewBufferedFormatString("\t")
-	buffer.Printfln("package %s", module)
-	generateGoImports(api, buffer)
 
+	// basics
+	buffer.Printfln("package %s", module)
+	buffer.Printfln("\nimport \"net/http\"")
+
+	generateGoResourceMethods(api, buffer)
 	return buffer.String(), nil
 }
 
-func generateGoImports(api *API, buffer *presilo.BufferedFormatString) {
-	buffer.Printfln("\nimport \"net/http\"")
+func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
+
+	
 }
