@@ -51,6 +51,7 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	var ret *API
 	var decoder *json.Decoder
 	var schemaContext *presilo.SchemaParseContext
+	var parameters map[string]presilo.TypeSchema
 	var err error
 
 	decoder = json.NewDecoder(reader)
@@ -74,11 +75,12 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	}
 
 	// parse parameters in order
-	ret.Parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
+	parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
 	if(err != nil) {
 		return nil, err
 	}
 
+	ret.Parameters = ParameterList{Parameters: parameters}
 	ret.schemas = schemaContext.SchemaDefinitions
 	return ret, nil
 }
@@ -119,7 +121,6 @@ func translateAPIStructs(intermediate marshalledAPI) *API {
 	ret.BaseURL = intermediate.BaseURL
 	ret.Description = intermediate.Description
 	ret.Resources = intermediate.Resources
-	ret.orderedParameters = intermediate.OrderedParameters
 
 	return ret
 }

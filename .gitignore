@@ -1,5 +1,4 @@
-src/
-!src/atau
+src/github.com/
 pkg/
 .output/
 .temp/
