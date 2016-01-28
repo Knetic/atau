@@ -1,3 +1,5 @@
+src/
+!src/atau
 pkg/
 .output/
 .temp/

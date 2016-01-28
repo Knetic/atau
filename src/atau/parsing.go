@@ -24,7 +24,6 @@ type marshalledAPI struct {
 
 	Schemas map[string]*json.RawMessage `json:"schemas"`
 	Parameters map[string]*json.RawMessage `json:"parameters"`
-	RequiredParameters []string `json:"requiredParameters"`
 	OrderedParameters []string `json:"orderedParameters"`
 }
 
@@ -75,7 +74,7 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	}
 
 	// parse parameters in order
-	ret.parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
+	ret.Parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
 	if(err != nil) {
 		return nil, err
 	}
@@ -84,12 +83,14 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	return ret, nil
 }
 
-func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *presilo.SchemaParseContext) ([]presilo.TypeSchema, error) {
+func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *presilo.SchemaParseContext) (map[string]presilo.TypeSchema, error) {
 
-	var ret []presilo.TypeSchema
+	var ret map[string]presilo.TypeSchema
 	var schema presilo.TypeSchema
 	var rawBody []byte
 	var err error
+
+	ret = make(map[string]presilo.TypeSchema)
 
 	for name, body := range parameters {
 
@@ -103,7 +104,7 @@ func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *pre
 			return nil, err
 		}
 
-		ret = append(ret, schema)
+		ret[name] = schema
 	}
 
 	return ret, nil
@@ -118,7 +119,6 @@ func translateAPIStructs(intermediate marshalledAPI) *API {
 	ret.BaseURL = intermediate.BaseURL
 	ret.Description = intermediate.Description
 	ret.Resources = intermediate.Resources
-	ret.requiredParameters = intermediate.RequiredParameters
 	ret.orderedParameters = intermediate.OrderedParameters
 
 	return ret
