@@ -17,4 +17,5 @@ type Method struct {
 
 	RawRequestSchema *json.RawMessage
 	RawResponseSchema *json.RawMessage
+	RawParameters map[string]*json.RawMessage
 }

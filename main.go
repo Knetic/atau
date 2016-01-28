@@ -22,7 +22,7 @@ func main() {
 		exitWith(1, "Unable to parse api file: %v\n", err.Error())
 	}
 
-	fmt.Printf("api: %v\n", api)
+	atau.WriteGeneratedCode(api, settings.Module, settings.OutputPath, settings.Language, false)
 }
 
 func exitWith(code int, format string, arguments ...string) {

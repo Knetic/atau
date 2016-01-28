@@ -79,10 +79,58 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	if(err != nil) {
 		return nil, err
 	}
-
 	ret.Parameters = ParameterList{Parameters: parameters}
+
+	// deal with resources/methods.
+	for _, resource := range ret.Resources {
+		for _, method := range resource.Methods {
+
+			err = parseResourceMethod(resource, &method, schemaContext)
+			if(err != nil) {
+				return nil, err
+			}
+		}
+	}
+
 	ret.schemas = schemaContext.SchemaDefinitions
+	ret.schemaContext = schemaContext
 	return ret, nil
+}
+
+/*
+	Resource Methods require a little extra parsing around parameters and schemas.
+*/
+func parseResourceMethod(resource Resource, method *Method, schemaContext *presilo.SchemaParseContext) error {
+
+	var parameters ParameterList
+	var err error
+
+	// request/response
+	if(method.RawRequestSchema != nil) {
+
+		method.RequestSchema, err = unmarshalSchema(method.RawRequestSchema, "", schemaContext)
+		if(err != nil) {
+			return err
+		}
+	}
+
+	if(method.RawResponseSchema != nil) {
+
+		method.ResponseSchema, err = unmarshalSchema(method.RawResponseSchema, "", schemaContext)
+		if(err != nil) {
+			return err
+		}
+	}
+
+	if(method.RawParameters != nil) {
+
+		parameters.Parameters, err = parseSchemaBlock(method.RawParameters, schemaContext)
+		if(err != nil) {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *presilo.SchemaParseContext) (map[string]presilo.TypeSchema, error) {
@@ -110,6 +158,19 @@ func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *pre
 	}
 
 	return ret, nil
+}
+
+func unmarshalSchema(rawSchema *json.RawMessage, defaultTitle string, schemaContext *presilo.SchemaParseContext) (presilo.TypeSchema, error) {
+
+	var rawBody []byte
+	var err error
+
+	rawBody, err = rawSchema.MarshalJSON()
+	if(err != nil) {
+		return nil, err
+	}
+
+	return presilo.ParseSchemaStreamContinue(bytes.NewReader(rawBody), defaultTitle, schemaContext)
 }
 
 func translateAPIStructs(intermediate marshalledAPI) *API {

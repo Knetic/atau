@@ -14,4 +14,5 @@ type API struct {
 	Parameters ParameterList
 
 	schemas map[string]presilo.TypeSchema
+	schemaContext *presilo.SchemaParseContext
 }
