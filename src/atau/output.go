@@ -1,5 +1,60 @@
 package atau
 
+import (
+	"os"
+	"errors"
+	"io/ioutil"
+	"path/filepath"
+)
+
 func WriteGeneratedCode(api *API, module string, targetPath string, language string, unsafeModule bool) error {
-	return nil
+
+	var generator func(*API, string)(string, error)
+	var targetName string
+	var contents string
+	var err error
+
+	// get final file name
+	targetPath, err = prepareOutputPath(targetPath)
+	if(err != nil) {
+		return err
+	}
+	
+	targetName = filepath.Join(targetPath, module + "." + language)
+
+	switch language {
+
+	case "go":
+		generator = GenerateGo
+	default:
+		return errors.New("Invalid output language specified")
+	}
+
+	contents, err = generator(api, module)
+	if(err != nil) {
+		return err
+	}
+
+	return ioutil.WriteFile(targetName, []byte(contents), os.ModePerm)
+}
+
+/*
+  Given the output path, returns the absolute value of it,
+  and ensures that the given path exists.
+*/
+func prepareOutputPath(targetPath string) (string, error) {
+
+	var err error
+
+	targetPath, err = filepath.Abs(targetPath)
+	if err != nil {
+		return "", err
+	}
+
+	err = os.MkdirAll(targetPath, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	return targetPath, nil
 }

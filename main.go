@@ -17,12 +17,18 @@ func main() {
 		exitWith(1, "No input path specified")
 	}
 
-	api, err = atau.ParseAPIFile(settings.InputPaths[0])
-	if(err != nil) {
-		exitWith(1, "Unable to parse api file: %v\n", err.Error())
-	}
+	for _, path := range settings.InputPaths {
 
-	atau.WriteGeneratedCode(api, settings.Module, settings.OutputPath, settings.Language, false)
+		api, err = atau.ParseAPIFile(path)
+		if(err != nil) {
+			exitWith(1, "Unable to parse api file: %v\n", err.Error())
+		}
+
+		err = atau.WriteGeneratedCode(api, settings.Module, settings.OutputPath, settings.Language, false)
+		if(err != nil) {
+			exitWith(1, "Unable to write generated code: %v\n", err.Error())
+		}
+	}
 }
 
 func exitWith(code int, format string, arguments ...string) {
