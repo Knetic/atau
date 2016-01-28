@@ -128,6 +128,8 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 		if(err != nil) {
 			return err
 		}
+
+		method.Parameters = parameters
 	}
 
 	return nil
