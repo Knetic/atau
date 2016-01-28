@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"path/filepath"
+	"github.com/Knetic/presilo"
 )
 
 func WriteGeneratedCode(api *API, module string, targetPath string, language string, unsafeModule bool) error {
@@ -19,7 +20,7 @@ func WriteGeneratedCode(api *API, module string, targetPath string, language str
 	if(err != nil) {
 		return err
 	}
-	
+
 	targetName = filepath.Join(targetPath, module + "." + language)
 
 	switch language {
@@ -30,6 +31,13 @@ func WriteGeneratedCode(api *API, module string, targetPath string, language str
 		return errors.New("Invalid output language specified")
 	}
 
+	// first, write presilo schemas
+	err = presilo.WriteGeneratedCode(api.schemaContext, module, targetPath, language, "\t", false, true)
+	if(err != nil) {
+		return err
+	}
+	
+	// now write atau wiring
 	contents, err = generator(api, module)
 	if(err != nil) {
 		return err
