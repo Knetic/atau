@@ -73,12 +73,14 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	if(err != nil) {
 		return nil, err
 	}
+	presilo.LinkSchemas(schemaContext)
 
 	// parse parameters in order
 	parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
 	if(err != nil) {
 		return nil, err
 	}
+	presilo.LinkSchemas(schemaContext)
 	ret.Parameters = ParameterList{Parameters: parameters}
 
 	// deal with resources/methods.

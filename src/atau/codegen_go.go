@@ -14,7 +14,7 @@ func GenerateGo(api *API, module string)(string, error) {
 
 	// basics
 	buffer.Printfln("package %s", module)
-	buffer.Printfln("\nimport \"net/http\"\n")
+	buffer.Printfln("\nimport (\"net/http\"\n\"encoding/json\")")
 
 	generateGoResourceMethods(api, buffer)
 	return buffer.String(), nil
@@ -23,9 +23,13 @@ func GenerateGo(api *API, module string)(string, error) {
 func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 	var fullPath string
+	var methodName string
+	var hasResponse bool
 
 	for resourceName, resource := range api.Resources {
 		for methodPrefix, method := range resource.Methods {
+
+			hasResponse = method.ResponseSchema != nil
 
 			// description doc comment
 			buffer.Printf("\n/*")
@@ -35,16 +39,16 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printf("\n*/")
 
 			// signature
-			if(method.ResponseSchema != nil) {
-				buffer.Printf("\nfunc %s%s() (%s, error) {", presilo.ToCamelCase(methodPrefix), presilo.ToCamelCase(resourceName), presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
-			} else {
-				buffer.Printf("\nfunc %s%s() error {", presilo.ToCamelCase(methodPrefix), presilo.ToCamelCase(resourceName))
-			}
+			methodName = presilo.ToCamelCase(methodPrefix) + presilo.ToCamelCase(resourceName)
+			generateGoMethodSignature(methodName, method.RequestSchema, method.ResponseSchema, buffer)
 			buffer.AddIndentation(1)
 
 			// params
 			buffer.Printfln("\nvar client http.Client")
-			if(method.ResponseSchema != nil) {
+			buffer.Printfln("\nvar request *http.Request")
+			buffer.Printfln("\nvar response *http.Response")
+			buffer.Printfln("\nvar err error")
+			if(hasResponse) {
 				buffer.Printfln("var ret %s", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
 			}
 
@@ -52,21 +56,21 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			// request
 			fullPath = resolvePath(api, method)
-			buffer.Printfln("request := http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
+			buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
-			buffer.Printfln("response, err := client.Do(request)")
-			addGoErrCheck(buffer, true)
+			buffer.Printfln("response, err = client.Do(request)")
+			addGoErrCheck(buffer, hasResponse)
 
 			// marshal?
-			if(method.ResponseSchema != nil) {
+			if(hasResponse) {
 
-				buffer.Printfln("\ndecoder = json.NewDecoder(response.Body)")
+				buffer.Printfln("\ndecoder := json.NewDecoder(response.Body)")
 				buffer.Printfln("err = decoder.Decode(&ret)")
 				addGoErrCheck(buffer, true)
 			}
 
 			// close up.
-			if(method.ResponseSchema != nil) {
+			if(hasResponse) {
 				buffer.Printf("\nreturn ret, nil")
 			} else {
 				buffer.Printf("\nreturn nil")
@@ -76,6 +80,24 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printfln("\n}")
 		}
 	}
+}
+
+func generateGoMethodSignature(methodName string, request presilo.TypeSchema, response presilo.TypeSchema, buffer *presilo.BufferedFormatString) {
+
+	buffer.Printf("\nfunc %s(", methodName)
+	if(request != nil) {
+		buffer.Printf("params %s", presilo.ToCamelCase(request.GetTitle()))
+	}
+
+	buffer.Printf(") ")
+
+	if(response != nil) {
+		buffer.Printf("(%s, error)", presilo.ToCamelCase(response.GetTitle()))
+	} else {
+		buffer.Printf("error")
+	}
+
+	buffer.Printf("{")
 }
 
 /*
