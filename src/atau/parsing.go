@@ -82,14 +82,17 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	ret.Parameters = ParameterList{Parameters: parameters}
 
 	// deal with resources/methods.
-	for _, resource := range ret.Resources {
-		for _, method := range resource.Methods {
+	for resourceKey, resource := range ret.Resources {
+		for methodKey, method := range resource.Methods {
 
 			err = parseResourceMethod(resource, &method, schemaContext)
 			if(err != nil) {
 				return nil, err
 			}
+
+			resource.Methods[methodKey] = method
 		}
+		ret.Resources[resourceKey] = resource
 	}
 
 	ret.schemas = schemaContext.SchemaDefinitions
