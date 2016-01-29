@@ -16,6 +16,16 @@ type ParameterList struct {
 }
 
 /*
+	Generates an overarching object schema which can be used to collect all values in this list as an object.
+*/
+func (this ParameterList) GenerateWrapperSchema() presilo.TypeSchema {
+
+	var ret *presilo.ObjectSchema
+
+	return ret
+}
+
+/*
 	Gets a list of all parameters, with all required parameters first, followed by the rest.
 	Both required and not-required parameters are returned in the order that most closely matches the "orderedParameters" list.
 */
