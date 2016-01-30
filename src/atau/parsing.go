@@ -75,7 +75,11 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 		errorMsg := fmt.Sprintf("Unable to parse api schemas: %v", err)
 		return nil, errors.New(errorMsg)
 	}
-	presilo.LinkSchemas(schemaContext)
+
+	err = presilo.LinkSchemas(schemaContext)
+	if(err != nil) {
+		return nil, err
+	}
 
 	// parse parameters
 	parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
@@ -83,7 +87,11 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 		errorMsg := fmt.Sprintf("Unable to parse api parameters: %v", err)
 		return nil, errors.New(errorMsg)
 	}
-	presilo.LinkSchemas(schemaContext)
+	
+	err = presilo.LinkSchemas(schemaContext)
+	if(err != nil) {
+		return nil, err
+	}
 	ret.Parameters = ParameterList{Parameters: parameters}
 
 	// deal with resources/methods.

@@ -2,8 +2,8 @@
 
 make
 
-./.output/atau -o "./.output/go" -l go -m "sample" ./samples/urlshortener.json
+./.output/atau -o "./.temp/go" -l go -m "sample" ./samples/urlshortener.json
 
-pushd ./.output/go
+pushd ./.temp/go
 go build .
 popd
