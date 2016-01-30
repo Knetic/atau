@@ -12,10 +12,7 @@ func GenerateGo(api *API, module string)(string, error) {
 
 	buffer = presilo.NewBufferedFormatString("\t")
 
-	// basics
-	buffer.Printfln("package %s", module)
-	buffer.Printfln("\nimport (\"net/http\"\n\"encoding/json\")")
-
+	generateGoImports(api, module, buffer)
 	generateGoResourceMethods(api, buffer)
 	return buffer.String(), nil
 }
@@ -44,15 +41,15 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.AddIndentation(1)
 
 			// params
-			buffer.Printfln("\nvar client http.Client")
-			buffer.Printfln("\nvar request *http.Request")
-			buffer.Printfln("\nvar response *http.Response")
-			buffer.Printfln("\nvar err error")
+			buffer.Printf("\nvar client http.Client")
+			buffer.Printf("\nvar request *http.Request")
+			buffer.Printf("\nvar response *http.Response")
+			buffer.Printf("\nvar err error")
 			if(hasResponse) {
-				buffer.Printfln("var ret %s", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
+				buffer.Printf("\nvar ret %s", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
 			}
 
-			buffer.Printfln("")
+			buffer.Printfln("\n")
 
 			// request
 			fullPath = resolvePath(api, method)
@@ -60,6 +57,14 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
 			buffer.Printfln("response, err = client.Do(request)")
 			addGoErrCheck(buffer, hasResponse)
+
+			// check for non-2xx
+			buffer.Printf("if(response.StatusCode >= 400) {")
+			buffer.AddIndentation(1)
+			buffer.Printf("\nerrorMsg := fmt.Sprintf(\"Unable to complete request, server returned %%s\", response.Status)")
+			buffer.Printf("\nreturn ret, errors.New(errorMsg)")
+			buffer.AddIndentation(-1)
+			buffer.Printf("\n}\n")
 
 			// marshal?
 			if(hasResponse) {
@@ -98,6 +103,19 @@ func generateGoMethodSignature(methodName string, request presilo.TypeSchema, re
 	}
 
 	buffer.Printf("{")
+}
+
+func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatString) {
+
+	buffer.Printfln("package %s", module)
+	buffer.Printf("\nimport (")
+	buffer.AddIndentation(1)
+	buffer.Printf("\n\"fmt\"")
+	buffer.Printf("\n\"net/http\"")
+	buffer.Printf("\n\"encoding/json\"")
+	buffer.Printf("\n\"errors\"")
+	buffer.AddIndentation(-1)
+	buffer.Printfln(")")
 }
 
 /*
