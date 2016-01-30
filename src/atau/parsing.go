@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"io"
 	"os"
+	"fmt"
 	"github.com/Knetic/presilo"
 )
 
@@ -71,14 +72,16 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 	// parse schemas
 	_, err = parseSchemaBlock(intermediate.Schemas, schemaContext)
 	if(err != nil) {
-		return nil, err
+		errorMsg := fmt.Sprintf("Unable to parse api schemas: %v", err)
+		return nil, errors.New(errorMsg)
 	}
 	presilo.LinkSchemas(schemaContext)
 
-	// parse parameters in order
+	// parse parameters
 	parameters, err = parseSchemaBlock(intermediate.Parameters, schemaContext)
 	if(err != nil) {
-		return nil, err
+		errorMsg := fmt.Sprintf("Unable to parse api parameters: %v", err)
+		return nil, errors.New(errorMsg)
 	}
 	presilo.LinkSchemas(schemaContext)
 	ret.Parameters = ParameterList{Parameters: parameters}
@@ -89,7 +92,8 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 
 			err = parseResourceMethod(resource, &method, schemaContext)
 			if(err != nil) {
-				return nil, err
+				errorMsg := fmt.Sprintf("Unable to parse request parameter schemas for %s%s: %v", methodKey, resourceKey, err)
+				return nil, errors.New(errorMsg)
 			}
 
 			resource.Methods[methodKey] = method
@@ -115,7 +119,8 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 
 		method.RequestSchema, err = unmarshalSchema(method.RawRequestSchema, "", schemaContext)
 		if(err != nil) {
-			return err
+			errorMsg := fmt.Sprintf("Unable to parse request schema for %s: %v", resource.Name, err)
+			return errors.New(errorMsg)
 		}
 	}
 
@@ -123,7 +128,8 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 
 		method.ResponseSchema, err = unmarshalSchema(method.RawResponseSchema, "", schemaContext)
 		if(err != nil) {
-			return err
+			errorMsg := fmt.Sprintf("Unable to parse response schema for %s: %v", resource.Name, err)
+			return errors.New(errorMsg)
 		}
 	}
 
@@ -131,7 +137,8 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 
 		parameters.Parameters, err = parseSchemaBlock(method.RawParameters, schemaContext)
 		if(err != nil) {
-			return err
+			errorMsg := fmt.Sprintf("Unable to parse parameters for %s: %v", resource.Name, err)
+			return errors.New(errorMsg)
 		}
 
 		method.Parameters = parameters
@@ -153,12 +160,14 @@ func parseSchemaBlock(parameters map[string]*json.RawMessage, schemaContext *pre
 
 		rawBody, err = body.MarshalJSON()
 		if(err != nil) {
-			return nil, err
+			errorMsg := fmt.Sprintf("Unable unmarshal JSON for %s: %v", name, err)
+			return nil, errors.New(errorMsg)
 		}
 
 		schema, err = presilo.ParseSchemaStreamContinue(bytes.NewReader(rawBody), name, schemaContext)
 		if(err != nil) {
-			return nil, err
+			errorMsg := fmt.Sprintf("Unable to parse schema for %s: %v", name, err)
+			return nil, errors.New(errorMsg)
 		}
 
 		ret[name] = schema
