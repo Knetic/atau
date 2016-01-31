@@ -21,6 +21,9 @@ fmt:
 	@go fmt .
 	@go fmt ./src/atau
 
+install: build
+	@cp ./.output/atau /usr/local/bin/atau
+
 dist: build test
 
 	export GOOS=linux; \
