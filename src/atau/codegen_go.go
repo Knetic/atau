@@ -67,7 +67,12 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printf("if(response.StatusCode >= 400) {")
 			buffer.AddIndentation(1)
 			buffer.Printf("\nerrorMsg := fmt.Sprintf(\"Unable to complete request, server returned %%s\", response.Status)")
-			buffer.Printf("\nreturn ret, errors.New(errorMsg)")
+
+			if(hasResponse) {
+				buffer.Printf("\nreturn ret, errors.New(errorMsg)")
+			} else {
+				buffer.Printf("\nreturn errors.New(errorMsg)")
+			}
 			buffer.AddIndentation(-1)
 			buffer.Printf("\n}\n")
 
