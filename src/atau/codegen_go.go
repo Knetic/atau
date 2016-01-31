@@ -40,7 +40,7 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printf("\n*/")
 
 			// signature
-			methodName = presilo.ToCamelCase(methodPrefix) + presilo.ToCamelCase(resourceName)
+			methodName = presilo.ToStrictCamelCase(methodPrefix) + presilo.ToStrictCamelCase(resourceName)
 			generateGoMethodSignature(methodName, api.optionsSchema, method, buffer)
 			buffer.AddIndentation(1)
 
@@ -50,7 +50,7 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printf("\nvar response *http.Response")
 			buffer.Printf("\nvar err error")
 			if(hasResponse) {
-				buffer.Printf("\nvar ret %s", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
+				buffer.Printf("\nvar ret %s", presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle()))
 			}
 
 			buffer.Printfln("\n")
@@ -94,20 +94,32 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 func generateGoMethodSignature(methodName string, optionsSchema *presilo.ObjectSchema, method Method, buffer *presilo.BufferedFormatString) {
 
 	var arguments []string
+	var parameterSchema presilo.TypeSchema
+	var parameterType string
 
 	buffer.Printf("\nfunc %s(", methodName)
 
 	if(optionsSchema != nil) {
-		arguments = append(arguments, fmt.Sprintf("options %s", presilo.ToCamelCase(optionsSchema.GetTitle())))
+		arguments = append(arguments, fmt.Sprintf("options %s", presilo.ToStrictCamelCase(optionsSchema.GetTitle())))
 	}
 	if(method.RequestSchema != nil) {
-		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToCamelCase(method.RequestSchema.GetTitle())))
+		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToStrictCamelCase(method.RequestSchema.GetTitle())))
+	}
+
+	// method-specific parameters
+	for _, parameterName := range method.Parameters.GetOrderedParameters() {
+
+		parameterSchema = method.Parameters.Parameters[parameterName]
+		parameterType = presilo.ToStrictCamelCase(parameterSchema.GetTitle())
+		parameterName = presilo.ToStrictJavaCase(parameterName)
+		
+		arguments = append(arguments, fmt.Sprintf("%s %s", parameterName, parameterType))
 	}
 
 	buffer.Printf("%s) ", strings.Join(arguments, ", "))
 
 	if(method.ResponseSchema != nil) {
-		buffer.Printf("(%s, error)", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
+		buffer.Printf("(%s, error)", presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle()))
 	} else {
 		buffer.Printf("error")
 	}

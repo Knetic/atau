@@ -10,9 +10,6 @@ import (
 type ParameterList struct {
 
 	Parameters map[string]presilo.TypeSchema
-
-	requiredParameters []string
-	orderedParameters []string
 }
 
 /*
@@ -30,14 +27,22 @@ func (this ParameterList) GenerateWrapperSchema() presilo.TypeSchema {
 	Both required and not-required parameters are returned in the order that most closely matches the "orderedParameters" list.
 */
 func (this ParameterList) GetOrderedParameters() []string {
-	return this.orderedParameters
+
+	var orderedParameters presilo.SortableStringArray
+
+	for key, _ := range this.Parameters {
+		orderedParameters = append(orderedParameters, key)
+	}
+
+	orderedParameters.Sort()
+	return orderedParameters
 }
 
 /*
 	Gets a list of all parameters, in the order that they should appear as given by the "orderedParameters" list.
 */
 func (this ParameterList) GetOrderedParametersVerbatim() []string {
-	return this.orderedParameters
+	return this.GetOrderedParameters()
 }
 
 /*
@@ -46,5 +51,5 @@ func (this ParameterList) GetOrderedParametersVerbatim() []string {
 	this returns the ordered ones first, followed by the rest.
 */
 func (this ParameterList) GetRequiredParameters() []string {
-	return this.requiredParameters
+	return []string{}
 }
