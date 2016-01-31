@@ -2,7 +2,6 @@ package atau
 
 import (
 	"strings"
-	"path"
 	"fmt"
 	"github.com/Knetic/presilo"
 )
@@ -58,15 +57,28 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			// request
 			fullPath = resolvePath(api, method)
 			fullPath = generateGoInterpolatedPath(api, method, fullPath)
-			buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
+
+			// body, if applicable.
+			if(method.RequestSchema != nil) {
+				buffer.Printfln("marshalledBody, err := json.Marshal(requestContents)")
+				addGoErrCheck(buffer, hasResponse)
+
+				buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", bytes.NewReader(marshalledBody))", strings.ToUpper(method.HttpMethod), fullPath)
+			} else {
+				buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
+			}
+
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
+
+			// make request
 			buffer.Printfln("response, err = client.Do(request)")
 			addGoErrCheck(buffer, hasResponse)
 
 			// check for non-2xx
 			buffer.Printf("if(response.StatusCode >= 400) {")
 			buffer.AddIndentation(1)
-			buffer.Printf("\nerrorMsg := fmt.Sprintf(\"Unable to complete request, server returned %%s\", response.Status)")
+			buffer.Printf("\nresponseBodyString, _ := ioutil.ReadAll(response.Body)")
+			buffer.Printf("\nerrorMsg := fmt.Sprintf(\"Unable to complete request, server returned %%s: %%s\", response.Status, responseBodyString)")
 
 			if(hasResponse) {
 				buffer.Printf("\nreturn ret, errors.New(errorMsg)")
@@ -142,6 +154,8 @@ func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatSt
 	buffer.Printf("\n\"net/http\"")
 	buffer.Printf("\n\"encoding/json\"")
 	buffer.Printf("\n\"errors\"")
+	buffer.Printf("\n\"bytes\"")
+	buffer.Printf("\n\"io/ioutil\"")
 	buffer.AddIndentation(-1)
 	buffer.Printfln(")")
 }
@@ -169,7 +183,11 @@ func generateGoInterpolatedPath(api *API, method Method, fullPath string) string
 	and interpolated with the correct variable names for all parameters.
 */
 func resolvePath(api *API, method Method) string {
-	return path.Join(api.BaseURL, method.Path)
+
+	if(strings.HasSuffix(api.BaseURL, "/")) {
+		return api.BaseURL + method.Path
+	}
+	return api.BaseURL + "/" + method.Path
 }
 
 func addGoErrCheck(buffer *presilo.BufferedFormatString, includeRet bool) {
