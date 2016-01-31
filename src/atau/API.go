@@ -16,4 +16,10 @@ type API struct {
 
 	schemas map[string]presilo.TypeSchema
 	schemaContext *presilo.SchemaParseContext
+
+	optionsSchema *presilo.ObjectSchema
+}
+
+func (this *API) HasGlobalOptions() bool {
+	return len(this.Parameters.Parameters) > 0
 }

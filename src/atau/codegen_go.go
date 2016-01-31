@@ -3,6 +3,7 @@ package atau
 import (
 	"strings"
 	"path"
+	"fmt"
 	"github.com/Knetic/presilo"
 )
 
@@ -40,7 +41,7 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			// signature
 			methodName = presilo.ToCamelCase(methodPrefix) + presilo.ToCamelCase(resourceName)
-			generateGoMethodSignature(methodName, method.RequestSchema, method.ResponseSchema, buffer)
+			generateGoMethodSignature(methodName, api.optionsSchema, method, buffer)
 			buffer.AddIndentation(1)
 
 			// params
@@ -90,17 +91,23 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 	}
 }
 
-func generateGoMethodSignature(methodName string, request presilo.TypeSchema, response presilo.TypeSchema, buffer *presilo.BufferedFormatString) {
+func generateGoMethodSignature(methodName string, optionsSchema *presilo.ObjectSchema, method Method, buffer *presilo.BufferedFormatString) {
+
+	var arguments []string
 
 	buffer.Printf("\nfunc %s(", methodName)
-	if(request != nil) {
-		buffer.Printf("params %s", presilo.ToCamelCase(request.GetTitle()))
+
+	if(optionsSchema != nil) {
+		arguments = append(arguments, fmt.Sprintf("options %s", presilo.ToCamelCase(optionsSchema.GetTitle())))
+	}
+	if(method.RequestSchema != nil) {
+		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToCamelCase(method.RequestSchema.GetTitle())))
 	}
 
-	buffer.Printf(") ")
+	buffer.Printf("%s) ", strings.Join(arguments, ", "))
 
-	if(response != nil) {
-		buffer.Printf("(%s, error)", presilo.ToCamelCase(response.GetTitle()))
+	if(method.ResponseSchema != nil) {
+		buffer.Printf("(%s, error)", presilo.ToCamelCase(method.ResponseSchema.GetTitle()))
 	} else {
 		buffer.Printf("error")
 	}

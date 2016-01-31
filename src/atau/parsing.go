@@ -132,6 +132,7 @@ func generateAPIOptions(api *API, schemaContext *presilo.SchemaParseContext) {
 		schema.AddProperty(key, propertySchema)
 	}
 
+	api.optionsSchema = schema
 	schemaContext.SchemaDefinitions[name] = schema
 }
 
