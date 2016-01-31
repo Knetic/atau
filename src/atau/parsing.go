@@ -110,6 +110,12 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 		ret.Resources[resourceKey] = resource
 	}
 
+	// catch any unresolved schemas in methods
+	err = presilo.LinkSchemas(schemaContext)
+	if(err != nil) {
+		return nil, err
+	}
+
 	// synthetically generate an api-wide parameters schema.
 	generateAPIOptions(ret, schemaContext)
 
@@ -126,7 +132,7 @@ func generateAPIOptions(api *API, schemaContext *presilo.SchemaParseContext) {
 	if(len(api.Parameters.Parameters) <= 0) {
 		return
 	}
-	
+
 	schema = presilo.NewObjectSchema()
 	name = presilo.ToCamelCase(api.Name) + "Options"
 	schema.Title = name
@@ -177,6 +183,8 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 
 		method.Parameters = parameters
 	}
+
+	// TODO: check to see if there are any parameters used in a path that are not given
 
 	return nil
 }
