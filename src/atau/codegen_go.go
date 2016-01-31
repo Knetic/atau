@@ -57,6 +57,7 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			// request
 			fullPath = resolvePath(api, method)
+			fullPath = generateGoInterpolatedPath(api, method, fullPath)
 			buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
 			buffer.Printfln("response, err = client.Do(request)")
@@ -138,6 +139,23 @@ func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatSt
 	buffer.Printf("\n\"errors\"")
 	buffer.AddIndentation(-1)
 	buffer.Printfln(")")
+}
+
+/*
+	Interpolates querystring parameters for the given [fullPath].
+*/
+func generateGoInterpolatedPath(api *API, method Method, fullPath string) string {
+
+	var placeholder, replacement string
+
+	for key, _ := range method.Parameters.Parameters {
+
+		placeholder = fmt.Sprintf("{%s}", key)
+		replacement = fmt.Sprintf("\"+%s+\"", key)
+		fullPath = strings.Replace(fullPath, placeholder, replacement, -1)
+	}
+
+	return fullPath
 }
 
 /*
