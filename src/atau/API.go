@@ -6,6 +6,7 @@ import (
 
 type API struct {
 
+	Name string `json:"name"`
 	Title string `json:"title"`
 	Description string `json:"description"`
 	BaseURL string `json:"baseUrl"`

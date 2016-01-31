@@ -17,6 +17,7 @@ import (
 */
 type marshalledAPI struct {
 
+	Name string `json:"name"`
 	Title string `json:"title"`
 	Description string `json:"description"`
 	BaseURL string `json:"baseUrl"`
@@ -87,7 +88,7 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 		errorMsg := fmt.Sprintf("Unable to parse api parameters: %v", err)
 		return nil, errors.New(errorMsg)
 	}
-	
+
 	err = presilo.LinkSchemas(schemaContext)
 	if(err != nil) {
 		return nil, err
@@ -109,9 +110,29 @@ func ParseAPIStream(reader io.Reader, defaultTitle string) (*API, error) {
 		ret.Resources[resourceKey] = resource
 	}
 
+	// synthetically generate an api-wide parameters schema.
+	generateAPIOptions(ret, schemaContext)
+
 	ret.schemas = schemaContext.SchemaDefinitions
 	ret.schemaContext = schemaContext
 	return ret, nil
+}
+
+func generateAPIOptions(api *API, schemaContext *presilo.SchemaParseContext) {
+
+	var schema *presilo.ObjectSchema
+	var name string
+
+	schema = presilo.NewObjectSchema()
+	name = presilo.ToCamelCase(api.Name) + "Options"
+	schema.Title = name
+	schema.ID = name
+
+	for key, propertySchema := range api.Parameters.Parameters {
+		schema.AddProperty(key, propertySchema)
+	}
+
+	schemaContext.SchemaDefinitions[name] = schema
 }
 
 /*
@@ -202,6 +223,7 @@ func translateAPIStructs(intermediate marshalledAPI) *API {
 	var ret *API
 
 	ret = new(API)
+	ret.Name = intermediate.Name
 	ret.Title = intermediate.Title
 	ret.BaseURL = intermediate.BaseURL
 	ret.Description = intermediate.Description

@@ -17,6 +17,9 @@ func GenerateGo(api *API, module string)(string, error) {
 	return buffer.String(), nil
 }
 
+/*
+	Generates all methods for all defined api resources.
+*/
 func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 	var fullPath string
