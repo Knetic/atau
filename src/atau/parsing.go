@@ -123,6 +123,10 @@ func generateAPIOptions(api *API, schemaContext *presilo.SchemaParseContext) {
 	var schema *presilo.ObjectSchema
 	var name string
 
+	if(len(api.Parameters.Parameters) <= 0) {
+		return
+	}
+	
 	schema = presilo.NewObjectSchema()
 	name = presilo.ToCamelCase(api.Name) + "Options"
 	schema.Title = name

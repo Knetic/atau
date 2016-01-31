@@ -99,21 +99,21 @@ func generateGoMethodSignature(methodName string, optionsSchema *presilo.ObjectS
 
 	buffer.Printf("\nfunc %s(", methodName)
 
-	if(optionsSchema != nil) {
-		arguments = append(arguments, fmt.Sprintf("options %s", presilo.ToStrictCamelCase(optionsSchema.GetTitle())))
-	}
-	if(method.RequestSchema != nil) {
-		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToStrictCamelCase(method.RequestSchema.GetTitle())))
-	}
-
 	// method-specific parameters
 	for _, parameterName := range method.Parameters.GetOrderedParameters() {
 
 		parameterSchema = method.Parameters.Parameters[parameterName]
-		parameterType = presilo.ToStrictCamelCase(parameterSchema.GetTitle())
+		parameterType = presilo.GenerateGoTypeForSchema(parameterSchema)
 		parameterName = presilo.ToStrictJavaCase(parameterName)
-		
+
 		arguments = append(arguments, fmt.Sprintf("%s %s", parameterName, parameterType))
+	}
+
+	if(method.RequestSchema != nil) {
+		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToStrictCamelCase(method.RequestSchema.GetTitle())))
+	}
+	if(optionsSchema != nil) {
+		arguments = append(arguments, fmt.Sprintf("options %s", presilo.ToStrictCamelCase(optionsSchema.GetTitle())))
 	}
 
 	buffer.Printf("%s) ", strings.Join(arguments, ", "))
