@@ -27,6 +27,8 @@ func WriteGeneratedCode(api *API, module string, targetPath string, language str
 
 	case "go":
 		generator = GenerateGo
+	case "cs":
+		generator = GenerateCSharp
 	default:
 		return errors.New("Invalid output language specified")
 	}
@@ -36,7 +38,7 @@ func WriteGeneratedCode(api *API, module string, targetPath string, language str
 	if(err != nil) {
 		return err
 	}
-	
+
 	// now write atau wiring
 	contents, err = generator(api, module)
 	if(err != nil) {

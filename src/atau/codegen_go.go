@@ -56,16 +56,17 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			// request
 			fullPath = resolvePath(api, method)
-			fullPath = generateGoInterpolatedPath(api, method, fullPath)
+			fullPath = interpolatePath(api, method, fullPath)
+			fullPath = appendGoQuerystringPath(api, method, fullPath)
 
 			// body, if applicable.
 			if(method.RequestSchema != nil) {
 				buffer.Printfln("marshalledBody, err := json.Marshal(requestContents)")
 				addGoErrCheck(buffer, hasResponse)
 
-				buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", bytes.NewReader(marshalledBody))", strings.ToUpper(method.HttpMethod), fullPath)
+				buffer.Printfln("request, err = http.NewRequest(\"%s\", %s, bytes.NewReader(marshalledBody))", strings.ToUpper(method.HttpMethod), fullPath)
 			} else {
-				buffer.Printfln("request, err = http.NewRequest(\"%s\", \"%s\", nil)", strings.ToUpper(method.HttpMethod), fullPath)
+				buffer.Printfln("request, err = http.NewRequest(\"%s\", %s, nil)", strings.ToUpper(method.HttpMethod), fullPath)
 			}
 
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
@@ -160,36 +161,6 @@ func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatSt
 	buffer.Printfln(")")
 }
 
-/*
-	Interpolates querystring parameters for the given [fullPath].
-*/
-func generateGoInterpolatedPath(api *API, method Method, fullPath string) string {
-
-	var placeholder, replacement string
-
-	for key, _ := range method.Parameters.Parameters {
-
-		placeholder = fmt.Sprintf("{%s}", key)
-		replacement = fmt.Sprintf("\"+%s+\"", key)
-		fullPath = strings.Replace(fullPath, placeholder, replacement, -1)
-	}
-
-	return fullPath
-}
-
-/*
-	Paths can have parameter placeholders baked into them.
-	This provides a full path to a specific resource given an API's base path, the method's path,
-	and interpolated with the correct variable names for all parameters.
-*/
-func resolvePath(api *API, method Method) string {
-
-	if(strings.HasSuffix(api.BaseURL, "/")) {
-		return api.BaseURL + method.Path
-	}
-	return api.BaseURL + "/" + method.Path
-}
-
 func addGoErrCheck(buffer *presilo.BufferedFormatString, includeRet bool) {
 
 	buffer.Printf("if(err != nil) {")
@@ -202,4 +173,24 @@ func addGoErrCheck(buffer *presilo.BufferedFormatString, includeRet bool) {
 	}
 	buffer.AddIndentation(-1)
 	buffer.Printf("\n}\n")
+}
+
+func appendGoQuerystringPath(api *API, method Method, fullPath string) string {
+
+	var querystrings []string
+	var queryKeys []string
+
+	// set querystring
+	for key, _ := range method.Parameters.Parameters {
+		querystrings = append(querystrings, fmt.Sprintf("%s=%%v", key))
+		queryKeys = append(queryKeys, key)
+	}
+
+	if(len(querystrings) > 0) {
+
+		fullPath = fullPath + "?" + strings.Join(querystrings, "&")
+		fullPath = "fmt.Sprintf(\"" + fullPath + "\", " + strings.Join(queryKeys, ", ") + ")"
+	}
+
+	return fullPath
 }
