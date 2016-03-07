@@ -161,15 +161,31 @@ func generateGoMethodSignature(methodName string, optionsSchema *presilo.ObjectS
 
 func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatString) {
 
+	var modules []string
+
 	buffer.Printfln("package %s", module)
+
+	modules = []string{"fmt", "net/http", "encoding/json", "errors", "io/ioutil"}
+
+	// we only import "bytes" if we marshal a request
+	ModulesDefined:
+	for _, resource := range api.Resources {
+		for _, method := range resource.Methods {
+			if(method.RequestSchema != nil) {
+
+				modules = append(modules, "bytes")
+				break ModulesDefined
+			}
+		}
+	}
+
 	buffer.Printf("\nimport (")
 	buffer.AddIndentation(1)
-	buffer.Printf("\n\"fmt\"")
-	buffer.Printf("\n\"net/http\"")
-	buffer.Printf("\n\"encoding/json\"")
-	buffer.Printf("\n\"errors\"")
-	buffer.Printf("\n\"bytes\"")
-	buffer.Printf("\n\"io/ioutil\"")
+
+	for _, module := range modules {
+		buffer.Printf("\n\"%s\"", module)
+	}
+
 	buffer.AddIndentation(-1)
 	buffer.Printfln("\n)")
 }
