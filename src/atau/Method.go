@@ -14,8 +14,10 @@ type Method struct {
 	RequestSchema presilo.TypeSchema
 	ResponseSchema presilo.TypeSchema
 	Parameters ParameterList
+	Headers ParameterList
 
 	RawRequestSchema *json.RawMessage `json:"request"`
 	RawResponseSchema *json.RawMessage `json:"response"`
 	RawParameters map[string]*json.RawMessage `json:"parameters"`
+	RawHeaders map[string]*json.RawMessage `json:"headers"`
 }

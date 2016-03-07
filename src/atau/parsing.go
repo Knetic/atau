@@ -151,7 +151,7 @@ func generateAPIOptions(api *API, schemaContext *presilo.SchemaParseContext) {
 */
 func parseResourceMethod(resource Resource, method *Method, schemaContext *presilo.SchemaParseContext) error {
 
-	var parameters ParameterList
+	var parameters, headers ParameterList
 	var err error
 
 	// request/response
@@ -182,6 +182,17 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 		}
 
 		method.Parameters = parameters
+	}
+
+	if(method.RawHeaders != nil) {
+
+		headers.Parameters, err = parseSchemaBlock(method.RawHeaders, schemaContext)
+		if(err != nil) {
+			errorMsg := fmt.Sprintf("Unable to parse headers for %s: %v", resource.Name, err)
+			return errors.New(errorMsg)
+		}
+
+		method.Headers = headers
 	}
 
 	// TODO: check to see if there are any parameters used in a path that are not given

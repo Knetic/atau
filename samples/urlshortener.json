@@ -224,6 +224,9 @@
 		 "path": "url",
 		 "httpMethod": "GET",
 		 "description": "Expands a short URL or gets creation time and analytics.",
+		 "headers": {
+			"Authorization": {"type": "string"} 
+		 },
 		 "parameters": {
 			"projection": {
 			 "type": "string",

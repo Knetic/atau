@@ -70,6 +70,9 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			}
 
 			buffer.Printfln("request.Header.Set(\"Content-Type\", \"application/json\")")
+			for key, _ := range method.Headers.Parameters {
+				buffer.Printfln("request.Header.Set(\"%s\", fmt.Sprintf(\"%%v\", %s))", key, presilo.ToStrictJavaCase(key))
+			}
 
 			// make request
 			buffer.Printfln("response, err = client.Do(request)")
@@ -128,6 +131,16 @@ func generateGoMethodSignature(methodName string, optionsSchema *presilo.ObjectS
 		arguments = append(arguments, fmt.Sprintf("%s %s", parameterName, parameterType))
 	}
 
+	// method-specific header parameters
+	for _, parameterName := range method.Headers.GetOrderedParameters() {
+
+		parameterSchema = method.Headers.Parameters[parameterName]
+		parameterType = presilo.GenerateGoTypeForSchema(parameterSchema)
+		parameterName = presilo.ToStrictJavaCase(parameterName)
+
+		arguments = append(arguments, fmt.Sprintf("%s %s", parameterName, parameterType))
+	}
+
 	if(method.RequestSchema != nil) {
 		arguments = append(arguments, fmt.Sprintf("requestContents %s", presilo.ToStrictCamelCase(method.RequestSchema.GetTitle())))
 	}
@@ -158,7 +171,7 @@ func generateGoImports(api *API, module string, buffer *presilo.BufferedFormatSt
 	buffer.Printf("\n\"bytes\"")
 	buffer.Printf("\n\"io/ioutil\"")
 	buffer.AddIndentation(-1)
-	buffer.Printfln(")")
+	buffer.Printfln("\n)")
 }
 
 func addGoErrCheck(buffer *presilo.BufferedFormatString, includeRet bool) {
@@ -183,13 +196,15 @@ func appendGoQuerystringPath(api *API, method Method, fullPath string) string {
 	// set querystring
 	for key, _ := range method.Parameters.Parameters {
 		querystrings = append(querystrings, fmt.Sprintf("%s=%%v", key))
-		queryKeys = append(queryKeys, key)
+		queryKeys = append(queryKeys, presilo.ToStrictJavaCase(key))
 	}
 
 	if(len(querystrings) > 0) {
 
 		fullPath = fullPath + "?" + strings.Join(querystrings, "&")
 		fullPath = "fmt.Sprintf(\"" + fullPath + "\", " + strings.Join(queryKeys, ", ") + ")"
+	} else {
+		fullPath = fmt.Sprintf("\"%s\"", fullPath)
 	}
 
 	return fullPath
