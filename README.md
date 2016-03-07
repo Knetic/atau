@@ -7,3 +7,12 @@ Should I use it?
 ====
 
 Cool your boots. `atau` is in a very early stage. While its aims are not unattainable, it may take some nights and weekends to get it there. It's not fit for production use just yet.
+
+Additions
+====
+
+For the most part, this library aims to implement the google discovery format. However, there are some extensions and places where this differs from what appears to be their spec.
+
+#### Headers
+
+`atau` allows the specification of headers similar to any other parameter. Every method can specify a "headers" block, which is a map of strings to schemas.
