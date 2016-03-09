@@ -13,10 +13,10 @@ func interpolatePath(api *API, method Method, fullPath string) string {
 	var placeholder, replacement string
 
 	// replace parameters as referenced in paths
-	for key, _ := range method.Parameters.Parameters {
+	for _, parameter := range method.PathParameters {
 
-		placeholder = fmt.Sprintf("{%s}", key)
-		replacement = fmt.Sprintf("\"+%s+\"", key)
+		placeholder = fmt.Sprintf("{%s}", parameter)
+		replacement = fmt.Sprintf("\"+%s+\"", parameter)
 		fullPath = strings.Replace(fullPath, placeholder, replacement, -1)
 	}
 
@@ -44,7 +44,7 @@ func appendQuerystringPath(api *API, method Method, fullPath string) string {
 	var querystrings []string
 
 	// set querystring
-	for key, _ := range method.Parameters.Parameters {
+	for _, key := range method.QueryParameters {
 		querystrings = append(querystrings, fmt.Sprintf("%s=\"+%s+\"", key, key))
 	}
 

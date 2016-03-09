@@ -173,12 +173,22 @@ func parseResourceMethod(resource Resource, method *Method, schemaContext *presi
 		}
 	}
 
+	// parse path parameters
+	method.PathParameters = determinePathParameters(method.Path)
+
 	if(method.RawParameters != nil) {
 
 		parameters.Parameters, err = parseSchemaBlock(method.RawParameters, schemaContext)
 		if(err != nil) {
 			errorMsg := fmt.Sprintf("Unable to parse parameters for %s: %v", resource.Name, err)
 			return errors.New(errorMsg)
+		}
+
+		// automatically separate query from path parameters.
+		for key, _ := range parameters.Parameters {
+			if(!method.parameterIsPath(key)) {
+				method.QueryParameters = append(method.QueryParameters, key)
+			}
 		}
 
 		method.Parameters = parameters
@@ -240,6 +250,60 @@ func unmarshalSchema(rawSchema *json.RawMessage, defaultTitle string, schemaCont
 	}
 
 	return presilo.ParseSchemaStreamContinue(bytes.NewReader(rawBody), defaultTitle, schemaContext)
+}
+
+/*
+	Discovers all bracket-surrounded parameter names in the url, returning a list of those names.
+*/
+func determinePathParameters(url string) []string {
+
+	var parameters []string
+	var parameter string
+	var character rune
+	var ok bool
+
+	stream := make(chan rune, 1)
+
+	go streamRunes(url, stream)
+
+	for {
+
+		character, ok =<- stream
+		if(!ok) {
+			break
+		}
+
+		if(character != '{') {
+			continue
+		}
+
+		// read parameter name
+		parameter = ""
+		for {
+			character, ok =<- stream
+			if(!ok) {
+				break
+			}
+
+			if(character == '}') {
+				break
+			}
+			parameter = parameter + string(character)
+		}
+
+		parameters = append(parameters, parameter)
+	}
+
+	return parameters
+}
+
+func streamRunes(input string, runes chan rune) {
+
+	defer close(runes)
+
+	for _, character := range input {
+		runes <- character
+	}
 }
 
 func translateAPIStructs(intermediate marshalledAPI) *API {

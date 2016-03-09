@@ -56,8 +56,8 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			// request
 			fullPath = resolvePath(api, method)
-			fullPath = interpolatePath(api, method, fullPath)
-			fullPath = appendGoQuerystringPath(api, method, fullPath)
+			fullPath = interpolateGoPath(api, method, fullPath)
+			//fullPath = strings.Replace(fullPath, "%", "%%", -1)
 
 			// body, if applicable.
 			if(method.RequestSchema != nil) {
@@ -204,24 +204,33 @@ func addGoErrCheck(buffer *presilo.BufferedFormatString, includeRet bool) {
 	buffer.Printf("\n}\n")
 }
 
-func appendGoQuerystringPath(api *API, method Method, fullPath string) string {
+func interpolateGoPath(api *API, method Method, fullPath string) string {
 
 	var querystrings []string
 	var queryKeys []string
+	var placeholder, replacement string
+
+	// replace parameters as referenced in paths
+	for _, parameter := range method.PathParameters {
+
+		placeholder = fmt.Sprintf("{%s}", parameter)
+		replacement = fmt.Sprintf("%%v")
+		fullPath = strings.Replace(fullPath, placeholder, replacement, -1)
+	}
 
 	// set querystring
-	for key, _ := range method.Parameters.Parameters {
+	for _, key := range method.QueryParameters {
 		querystrings = append(querystrings, fmt.Sprintf("%s=%%v", key))
 		queryKeys = append(queryKeys, presilo.ToStrictJavaCase(key))
 	}
 
 	if(len(querystrings) > 0) {
-
 		fullPath = fullPath + "?" + strings.Join(querystrings, "&")
-		fullPath = "fmt.Sprintf(\"" + fullPath + "\", " + strings.Join(queryKeys, ", ") + ")"
-	} else {
-		fullPath = fmt.Sprintf("\"%s\"", fullPath)
 	}
+
+	fullPath = "fmt.Sprintf(\"" + fullPath + "\", "
+	fullPath = fullPath + strings.Join(method.PathParameters, ", ")
+	fullPath = fullPath + strings.Join(queryKeys, ", ") + ")"
 
 	return fullPath
 }
