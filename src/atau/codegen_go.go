@@ -57,7 +57,6 @@ func generateGoResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			// request
 			fullPath = resolvePath(api, method)
 			fullPath = interpolateGoPath(api, method, fullPath)
-			//fullPath = strings.Replace(fullPath, "%", "%%", -1)
 
 			// body, if applicable.
 			if(method.RequestSchema != nil) {
