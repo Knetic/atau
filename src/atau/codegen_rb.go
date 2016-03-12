@@ -27,6 +27,7 @@ func generateRBImports(api *API, buffer *presilo.BufferedFormatString) {
 
 	buffer.Printfln("require 'uri'")
 	buffer.Printfln("require 'net/http'")
+	buffer.Printfln("require 'json'")
 	buffer.Printfln("")
 }
 
@@ -53,10 +54,11 @@ func generateRBResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 
 			buffer.Printfln("\nuri = URI.parse(\"%s\")", fullPath)
 			buffer.Printfln("http = Net::HTTP.new(uri.host, uri.port)")
-			buffer.Printfln("request = Net::HTTP::%s.new(uri.path)", presilo.ToJavaCase(strings.ToLower(method.HttpMethod)))
+			buffer.Printfln("request = Net::HTTP::%s.new(uri.path)", presilo.ToCamelCase(strings.ToLower(method.HttpMethod)))
 
 			if(method.RequestSchema != nil) {
-				buffer.Printfln("request.body = request_contents.to_json()")
+				buffer.Printfln("request.body = request_contents.to_hash().to_json()")
+				buffer.Printfln("request[\"Content-Type\"] = \"application/json\"")
 			}
 
 			// headers
@@ -67,7 +69,7 @@ func generateRBResourceMethods(api *API, buffer *presilo.BufferedFormatString) {
 			buffer.Printfln("response = http.request(request)")
 			buffer.Printf("if(Integer(response.code) >= 400)")
 			buffer.AddIndentation(1)
-			buffer.Printf("\nraise StandardError.new(\"Unable to reach resource, returned http\" + response.code)")
+			buffer.Printf("\nraise StandardError.new(\"Unable to reach resource, returned http\" + response.code + \": \" + response.body)")
 			buffer.AddIndentation(-1)
 			buffer.Printfln("\nend")
 			buffer.Printf("return JSON.parse(response.body)")
@@ -82,7 +84,7 @@ func generateRBMethodSignature(methodName string, optionsSchema *presilo.ObjectS
 
 	var arguments []string
 
-	buffer.Printf("\ndef %s(", methodName)
+	buffer.Printf("\ndef self.%s(", methodName)
 
 	// method-specific parameters
 	for _, parameterName := range method.Parameters.GetOrderedParameters() {
