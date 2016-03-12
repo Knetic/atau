@@ -98,14 +98,17 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			buffer.AddIndentation(-1)
 
 			// read response and unmarshal
-			buffer.Printf("\nusing(deserializer = new DataContractJsonSerializer())\n{")
-			buffer.AddIndentation(1)
-			buffer.Printfln("\nret = deserializer.ReadObject(response.GetResponseStream()) as %s;", responseTypeName)
-			buffer.Printf("responseText = reader.ReadToEnd();")
-			buffer.AddIndentation(-1)
-			buffer.Printfln("\n}\n")
+			if(hasResponse) {
+				buffer.Printf("\nusing(deserializer = new DataContractJsonSerializer())\n{")
+				buffer.AddIndentation(1)
+				buffer.Printfln("\nret = deserializer.ReadObject(response.GetResponseStream()) as %s;", responseTypeName)
+				buffer.Printf("responseText = reader.ReadToEnd();")
+				buffer.AddIndentation(-1)
+				buffer.Printfln("\n}\n")
 
-			buffer.Printf("return ret;")
+				buffer.Printf("return ret;")
+			}
+			
 			buffer.AddIndentation(-1)
 			buffer.Printf("\n}\n")
 		}
