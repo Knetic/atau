@@ -31,6 +31,8 @@ func WriteGeneratedCode(api *API, module string, targetPath string, language str
 		generator = GenerateCSharp
 	case "rb":
 		generator = GenerateRB
+	case "py":
+		generator = GeneratePython
 	default:
 		return errors.New("Invalid output language specified")
 	}
