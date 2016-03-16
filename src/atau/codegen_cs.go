@@ -70,12 +70,6 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			// params
 			buffer.Printfln("\nHttpWebRequest request;")
 			buffer.Printfln("HttpWebResponse response;")
-
-			if(hasResponse) {
-				responseTypeName = presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle())
-				buffer.Printfln("%s ret;", responseTypeName)
-			}
-
 			buffer.Printfln("")
 
 			// request
@@ -102,6 +96,7 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			// read response and unmarshal
 			if(hasResponse) {
 
+				responseTypeName = presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle())
 				buffer.Printf("\nDataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(%s));", responseTypeName)
 				buffer.Printfln("\nreturn (deserializer.ReadObject(response.GetResponseStream()) as %s);", responseTypeName)
 			}
