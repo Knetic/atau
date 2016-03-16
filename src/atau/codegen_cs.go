@@ -31,6 +31,7 @@ func generateCSharpImports(api *API, buffer *presilo.BufferedFormatString) {
 	buffer.Printfln("using System.Text.RegularExpressions;")
 	buffer.Printfln("using System.Runtime.Serialization;")
 	buffer.Printfln("using System.Net;")
+	buffer.Printfln("using System.Runtime.Serialization.Json;")
 
 	buffer.Printfln("")
 }
@@ -69,7 +70,7 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			// params
 			buffer.Printfln("\nHttpWebRequest request;")
 			buffer.Printfln("HttpWebResponse response;")
-			
+
 			if(hasResponse) {
 				responseTypeName = presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle())
 				buffer.Printfln("%s ret;", responseTypeName)
@@ -93,7 +94,7 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			buffer.Printfln("response = (HttpWebResponse)request.GetResponse();");
 
 			// check for bad status and hey, since this is C#, throw an exception!
-			buffer.Printf("if(response.StatusCode >= 400)")
+			buffer.Printf("if((int)response.StatusCode >= 400)")
 			buffer.AddIndentation(1)
 			buffer.Printf("\nthrow new Exception(\"Server returned status \"+response.StatusCode+\".\");")
 			buffer.AddIndentation(-1)
@@ -101,14 +102,8 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			// read response and unmarshal
 			if(hasResponse) {
 
-				buffer.Printf("\nusing(deserializer = new DataContractJsonSerializer())\n{")
-				buffer.AddIndentation(1)
-				buffer.Printfln("\nret = deserializer.ReadObject(response.GetResponseStream()) as %s;", responseTypeName)
-				buffer.Printf("responseText = reader.ReadToEnd();")
-				buffer.AddIndentation(-1)
-				buffer.Printfln("\n}\n")
-
-				buffer.Printf("return ret;")
+				buffer.Printf("\nDataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(%s));", responseTypeName)
+				buffer.Printfln("\nreturn (deserializer.ReadObject(response.GetResponseStream()) as %s);", responseTypeName)
 			}
 
 			buffer.AddIndentation(-1)
