@@ -54,7 +54,7 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 		for methodPrefix, method := range resource.Methods {
 
 			hasResponse = method.ResponseSchema != nil
-			
+
 			// description doc comment
 			buffer.Printf("\n/*")
 			buffer.AddIndentation(1)
@@ -69,7 +69,9 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			// params
 			buffer.Printfln("\nHttpWebRequest request;")
 			buffer.Printfln("HttpWebResponse response;")
+			
 			if(hasResponse) {
+				responseTypeName = presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle())
 				buffer.Printfln("%s ret;", responseTypeName)
 			}
 
@@ -98,8 +100,6 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 
 			// read response and unmarshal
 			if(hasResponse) {
-
-				responseTypeName = presilo.ToStrictCamelCase(method.ResponseSchema.GetTitle())
 
 				buffer.Printf("\nusing(deserializer = new DataContractJsonSerializer())\n{")
 				buffer.AddIndentation(1)
