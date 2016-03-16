@@ -82,7 +82,15 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 
 			// headers
 			for key, _ := range method.Headers.Parameters {
-				buffer.Printfln("request.Headers.Add(\"%s\") = %s;", key, key)
+				buffer.Printfln("request.Headers.Add(\"%s\", %s);", key, key)
+			}
+
+			// body
+			if(method.RequestSchema != nil) {
+
+				buffer.Printf("\nDataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(%s));", responseTypeName)
+				buffer.Printfln("serializer.WriteObject(request.GetRequestStream(), requestContents);")
+				buffer.Printfln("request.Headers.Add(\"Content-Type\", \"application/json\");")
 			}
 
 			buffer.Printfln("response = (HttpWebResponse)request.GetResponse();");
