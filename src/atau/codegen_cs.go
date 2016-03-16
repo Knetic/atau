@@ -48,13 +48,14 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 
 	var fullPath string
 	var methodName string
-	var responseTypeName string
-	var hasResponse bool
+	var responseTypeName, requestTypeName string
+	var hasRequest, hasResponse bool
 
 	for resourceName, resource := range api.Resources {
 		for methodPrefix, method := range resource.Methods {
 
 			hasResponse = method.ResponseSchema != nil
+			hasRequest = method.RequestSchema != nil
 
 			// description doc comment
 			buffer.Printf("\n/*")
@@ -86,11 +87,13 @@ func generateCSharpResourceMethods(api *API, buffer *presilo.BufferedFormatStrin
 			}
 
 			// body
-			if(method.RequestSchema != nil) {
+			if(hasRequest) {
 
-				buffer.Printf("\nDataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(%s));", responseTypeName)
+				requestTypeName = presilo.ToStrictCamelCase(method.RequestSchema.GetTitle())
+
+				buffer.Printf("\nDataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(%s));", requestTypeName)
 				buffer.Printfln("serializer.WriteObject(request.GetRequestStream(), requestContents);")
-				buffer.Printfln("request.Headers.Add(\"Content-Type\", \"application/json\");")
+				buffer.Printfln("request.ContentType = \"application/json\";")
 			}
 
 			buffer.Printfln("response = (HttpWebResponse)request.GetResponse();");
