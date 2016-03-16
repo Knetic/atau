@@ -121,7 +121,7 @@ func generateCSharpMethodSignature(methodName string, optionsSchema *presilo.Obj
 		returnType = "void"
 	}
 
-	buffer.Printf("\npublic %s %s(", returnType, methodName)
+	buffer.Printf("\npublic static %s %s(", returnType, methodName)
 
 	// method-specific parameters
 	for _, parameterName := range method.Parameters.GetOrderedParameters() {
