@@ -6,15 +6,20 @@ Generates code to build executables that can implement RESTful API clients in ma
 Why use it?
 ====
 
-Normally when you build a webservice, you want to implement client libraries for it; redistributables that enable developers with interact with your service easily. Usually, these libraries are only shipped for a language or two (if at all), and are expensive to create and maintain. Inevitably, you will never ship a library for every language that a developer may wish to use when interacting with your product.
+Normally when you build a webservice, you want to implement client libraries for it; redistributables that enable developers to interact with your service easily. Usually, these libraries are only shipped for a language or two (if at all), and are expensive to create and maintain - involving effort from developers who are familiar with every language you want to support. Inevitably, you will never ship a library for every language that a developer may wish to use when interacting with your product. You'll also end up supporting your libraries (including fixing bugs) far into the future, and need to maintain every one of them to match the changes you make to your product.
 
 `atau` seeks to solve that problem. You write a straightforward api description file (no code required) that describes how your webservice functions, what endpoints are available, and what headers/parameters/paths are necessary to interoperate with it. Then, `atau` can generate client libraries for this service in many languages - automatically, with no investment by you. Since the code is automatically generated, it is repeatable, can be tested by the `atau` authors instead of by your dev team, and conforms to whatever best practices the target languages advise.
+
+How do I use it?
+====
+
+Install one of the packages provided in the releases page, or just use the executable built by this repo. Requires an API document in the Discovery format (see the samples, or check out the [docs](https://developers.google.com/discovery/v1/reference/apis#methods)).
 
 In which languages can code be generated?
 ====
 
-* golang
-* C#
+* golang (any)
+* C# (.NET 3.5+)
 * Python (2+)
 * Ruby (1.9+)
 
@@ -46,4 +51,14 @@ Why is my favorite language not listed?
 
 * C/C++: These languages are too low-level to have a built-in JSON or HTTP library. The author, as noted above, is not interested in bloating codegeneration on a per-library basis.
 
-Other, less-used languages are simply not familiar enough to the author to warrant an implementation of them. Pull requests and iterations on them are welcome, but will first need to be included into [presilo](https://github.com/Knetic/presilo), which powers the schema parsing and code generation for `atau`.
+Other languages are simply not familiar enough to the author to warrant an implementation of them. Pull requests and iterations on them are welcome, but will first need to be included into [presilo](https://github.com/Knetic/presilo), which powers the schema parsing and code generation for `atau`.
+
+Branching
+====
+
+I use green masters, and heavily develop with private feature branches. Full releases are pinned and unchangeable, representing the best available version with the best documentation and test coverage. Master branch, however, should always have all tests pass and implementations considered "working", even if it's just a first pass. Master should never panic.
+
+Activity
+====
+
+If this repository hasn't been updated in a while, it's probably because I don't have any outstanding issues to work on - it's not because I've abandoned the project. If you have questions, issues, or patches; I'm completely open to pull requests, issues opened on github, or emails from out of the blue.
