@@ -1,0 +1,211 @@
+{
+	"kind": "discovery#restDescription",
+    "name": "gsaas",
+    "version": "v1",
+    "title": "LendingClub API",
+    "description": "Describes how to query note listings and make orders with the LendingClub API.",
+    "protocol": "rest",
+
+	"baseUrl": "https://api.lendingclub.com/api/investor/v1/",
+    "rootUrl": "https://api.lendingclub.com/api/investor/",
+    "servicePath": "v1/",
+	"resources":
+	{
+		"listing":
+		{
+			"methods":
+			{
+				"query":
+				{
+					"description": "Queries notes",
+					"path": "loans/listing",
+					"httpMethod": "GET",
+					"headers":
+					{
+						"Authorization": {"$ref": "AuthorizationHeader"}
+					},
+					"parameters":
+					{
+						"showAll": {"type": "boolean"}
+					},
+					"response":
+					{
+						"type": "object",
+						"title": "ListingQueryResponse",
+						"properties":
+						{
+							"loans":
+							{
+								"type": "array",
+								"items": {"$ref": "Note"}
+							}
+						}
+					}
+				}
+			}
+		},
+		"order":
+		{
+			"methods":
+			{
+				"make":
+				{
+					"description": "Purchases an order full of notes",
+					"path": "accounts/{investorID}/orders",
+					"httpMethod": "POST",
+
+					"parameters":
+					{
+						"investorID": {"$ref": "InvestorID"}
+					},
+
+					"headers":
+					{
+						"Authorization": {"$ref": "AuthorizationHeader"}
+					},
+					"request":
+					{
+						"type": "object",
+						"title": "OrderRequest",
+						"properties":
+						{
+							"aid": {"$ref": "InvestorID"},
+							"orders":
+							{
+								"type": "array",
+								"items":
+								{
+									"type": "object",
+									"title": "LoanOrder",
+									"properties":
+									{
+										"loanId": {"type": "integer"},
+										"requestedAmount":
+										{
+											"type": "number",
+											"minimum": 0,
+											"multipleOf": 25
+										},
+										"portfolioId": {"type": "integer"}
+									},
+									"required": ["loanId", "requestedAmount"]
+								}
+							}
+						},
+						"required": ["aid", "orders"]
+					}
+				}
+			}
+		},
+		"portfolio":
+		{
+			"methods":
+			{
+				"create":
+				{
+					"description": "Purchases an order full of notes",
+					"path": "accounts/{investorID}/portfolios",
+					"httpMethod": "POST",
+
+					"parameters":
+					{
+						"investorID": {"$ref": "InvestorID"}
+					},
+					"headers":
+					{
+						"Authorization": {"$ref": "AuthorizationHeader"}
+					},
+					"request":
+					{
+						"type": "object",
+						"title": "CreatePortfolioRequest",
+
+						"properties":
+						{
+							"aid": {"$ref": "InvestorID"},
+							"portfolioName": {"type": "string"},
+							"portfolioDescription": {"type": "string"}
+						},
+						"required": ["aid", "portfolioName"]
+					},
+					"response":
+					{
+						"type": "object",
+						"title": "CreatePortfolioResponse",
+
+						"properties":
+						{
+							"portfolioId": {"type": "integer"},
+							"portfolioName": {"type": "string"},
+							"portfolioDescription": {"type": "string"}
+						}
+					}
+				}
+			}
+		},
+		"availableCash":
+		{
+			"methods":
+			{
+				"poll":
+				{
+					"description": "Retrieves the amount of cash available to the investor",
+					"path": "accounts/{investorID}/availablecash",
+					"httpMethod": "GET",
+
+					"parameters":
+					{
+						"investorID": {"$ref": "InvestorID"}
+					},
+					"headers":
+					{
+						"Authorization": {"$ref": "AuthorizationHeader"}
+					},
+					"response":
+					{
+						"type": "object",
+						"title": "AvailableCashResponse",
+
+						"properties":
+						{
+							"investorId": {"type": "integer"},
+							"availableCash": {"type": "number"}
+						}
+					}
+				}
+			}
+		}
+	},
+	"schemas":
+	{
+		"Note":
+		{
+			"type": "object",
+			"title": "Note",
+			"description": "A single LendingClub note",
+			"properties":
+			{
+				"id": {"type": "integer"},
+				"fundedAmount": {"type": "number"},
+				"intRate": {"type": "number"},
+				"grade": {"$ref": "Grade"},
+				"annualInc": {"type": "number"},
+				"addrState": {"type": "string"},
+				"empTitle": {"type": "string"},
+				"dti": {"type": "number"},
+				"mthsSinceLastDelinq": {"type": "integer"},
+				"revolBal": {"type": "number"},
+				"revolvUtil": {"type": "number"},
+				"pubRecBankruptcies": {"type": "integer"},
+				"chargeoffWithin12Mths": {"type": "integer"}
+			}
+		},
+		"Grade":
+		{
+			"type": "string",
+			"enum":	["A", "B", "C", "D", "E", "F", "G"]
+		},
+		"AuthorizationHeader": {"type": "string"},
+		"InvestorID": {"type": "integer"}
+	}
+}

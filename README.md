@@ -10,6 +10,8 @@ Normally when you build a webservice, you want to implement client libraries for
 
 `atau` seeks to solve that problem. You write a straightforward api description file (no code required) that describes how your webservice functions, what endpoints are available, and what headers/parameters/paths are necessary to interoperate with it. Then, `atau` can generate client libraries for this service in many languages - automatically, with no investment by you. Since the code is automatically generated, it is repeatable, can be tested by the `atau` authors instead of by your dev team, and conforms to whatever best practices the target languages advise.
 
+It's also possible to use `atau` with services that you didn't write. Since you can generate code for any RESTful service, you can transcribe their API to a json file and use `atau` on that. For an example of this, seeing the "lendingclub.json" sample, which describes a few common operations of the LendingClub API. Note that this sample was not provided by LendingClub, it's just a way to use `atau` to generate clients for sites that do not yet publish an API schema document.
+
 How do I use it?
 ====
 
@@ -62,3 +64,8 @@ Activity
 ====
 
 If this repository hasn't been updated in a while, it's probably because I don't have any outstanding issues to work on - it's not because I've abandoned the project. If you have questions, issues, or patches; I'm completely open to pull requests, issues opened on github, or emails from out of the blue.
+
+Affiliation
+====
+
+Neither the author nor this project are associated with Google. This project consumes an open standard of document, but doesn't claim any ownership of the standard. A sample is included for LendingClub API, but the author has no affiliation there either - the sample is just a sample of a public API.
