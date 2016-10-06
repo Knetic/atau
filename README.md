@@ -1,6 +1,8 @@
 atau
 ====
 
+[![Build Status](https://travis-ci.org/Knetic/atau.svg?branch=master)](https://travis-ci.org/Knetic/atau)
+
 Generates code to build executables that can implement RESTful API clients in many languages. In more practical terms, this project aims to be an open-source equivalent to the tools apparently used at Google to build their clientside APIs (see the [discovery libraries](https://developers.google.com/discovery/libraries)).
 
 Why use it?
