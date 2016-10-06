@@ -43,7 +43,7 @@ In the Google Discovery API, a parameter given to a method must specify a `locat
 Why is my favorite language not listed?
 ====
 
-* JavaScript: Frontend JS is not on any roadmap, and probably won't ever be. However, IO.js and Node.js support seems likely.
+* JavaScript: Frontend JS is not on any roadmap, and probably won't ever be - due to the huge amount of libraries and possible ways to implement an API client in frontend JS. However, IO.js and Node.js support seems more unified, and therefore possible.
 
 * Powershell 2+: Support for this seems extremely likely, but will take some time since PS is not yet implemented in [presilo](https://github.com/Knetic/presilo), which powers the schema parsing and code generation for `atau`.
 
