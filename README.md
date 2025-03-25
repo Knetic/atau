@@ -3,6 +3,8 @@ atau
 
 [![Build Status](https://travis-ci.org/Knetic/atau.svg?branch=master)](https://travis-ci.org/Knetic/atau)
 
+# **ARCHIVED** -- see [ARCHIVED.md](./ARCHIVED.md) for details and alternatives.
+
 Generates code to build executables that can implement RESTful API clients in many languages. In more practical terms, this project aims to be an open-source equivalent to the tools apparently used at Google to build their clientside APIs (see the [discovery libraries](https://developers.google.com/discovery/libraries)).
 
 Why use it?
@@ -13,6 +15,8 @@ Normally when you build a webservice, you want to implement client libraries for
 `atau` seeks to solve that problem. You write a straightforward api description file (no code required) that describes how your webservice functions, what endpoints are available, and what headers/parameters/paths are necessary to interoperate with it. Then, `atau` can generate client libraries for this service in many languages - automatically, with no investment by you. Since the code is automatically generated, it is repeatable, can be tested by the `atau` authors instead of by your dev team, and conforms to whatever best practices the target languages advise.
 
 It's also possible to use `atau` with services that you didn't write. Since you can generate code for any RESTful service, you can transcribe their API to a json file and use `atau` on that. For an example of this, seeing the "lendingclub.json" sample, which describes a few common operations of the LendingClub API. Note that this sample was not provided by LendingClub, it's just a way to use `atau` to generate clients for sites that do not yet publish an API schema document.
+
+__2025-03-24 NOTE: Lending Club shut down its P2P lending in ~2019, so the sample here likely no longer works__
 
 How do I use it?
 ====
@@ -56,16 +60,6 @@ Why is my favorite language not listed?
 * C/C++: These languages are too low-level to have a built-in JSON or HTTP library. The author, as noted above, is not interested in bloating codegeneration on a per-library basis.
 
 Other languages are simply not familiar enough to the author to warrant an implementation of them. Pull requests and iterations on them are welcome, but will first need to be included into [presilo](https://github.com/Knetic/presilo), which powers the schema parsing and code generation for `atau`.
-
-Branching
-====
-
-I use green masters, and heavily develop with private feature branches. Full releases are pinned and unchangeable, representing the best available version with the best documentation and test coverage. Master branch, however, should always have all tests pass and implementations considered "working", even if it's just a first pass. Master should never panic.
-
-Activity
-====
-
-If this repository hasn't been updated in a while, it's probably because I don't have any outstanding issues to work on - it's not because I've abandoned the project. If you have questions, issues, or patches; I'm completely open to pull requests, issues opened on github, or emails from out of the blue.
 
 Affiliation
 ====
